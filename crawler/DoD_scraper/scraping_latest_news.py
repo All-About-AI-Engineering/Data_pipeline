@@ -1,19 +1,18 @@
 import argparse
+import datetime
 import json
 import os
 import re
-from time import sleep, gmtime, strftime
-from DoD_scraper import get_latest_allnews
-from DoD_scraper import strf_to_datetime
-from DoD_scraper import news_dateformat
-import datetime
+from time import gmtime, sleep, strftime
+
+from DoD_scraper import get_latest_allnews, news_dateformat, strf_to_datetime
 
 
 def save(json_obj, directory):
     date = json_obj.get('date', '')
     title = json_obj.get('title', '')
     filepath = '{}/DOD_{}_{}.json'.format(directory,
-                                      date, re.sub('[^a-zA-Z ]+', "", title[10:50]))
+                                          date, re.sub('[^a-zA-Z ]+', "", title[10:50]))
     with open(filepath, 'w', encoding='utf-8') as fp:
         json.dump(json_obj, fp, indent=2, ensure_ascii=False,
                   sort_keys=True, default=str)
@@ -21,33 +20,29 @@ def save(json_obj, directory):
 
 def scraping(section, begin_date, end_date, max_num, sleep, directory, verbose):
 
-    n_exceptions = 0
-# transcript
+    # transcript
     for i, json_obj in enumerate(get_latest_allnews(section, begin_date, end_date, max_num, sleep)):
         save(json_obj, directory)
-        print(json_obj.get('url') + "is scrapped")
-
-        if verbose:
-            title = json_obj['title']
-            date = json_obj['date']
-            print('[{} / {}] ({}) {}'.format(i+1, max_num, date, title))
+        title = json_obj['title']
+        date = json_obj['date']
+        print('[{} / {}] ({}) {}'.format(i+1, max_num, date, title))
 
 
 def main():
     parser = argparse.ArgumentParser()
-    today = datetime.date.today().strftime("%Y%m%d")
+    today = datetime.date.today().strftime("%Y-%m-%d")
     yesterday = (datetime.date.today() -
-                 datetime.timedelta(days=1)).strftime("%Y%m%d")
+                 datetime.timedelta(days=3)).strftime("%Y-%m-%d")
 
     parser.add_argument('--begin_date', type=str,
-                        default=today, help='datetime YYYYmmdd')
-    parser.add_argument('--end_date', type=str,
                         default=yesterday, help='datetime YYYYmmdd')
+    parser.add_argument('--end_date', type=str,
+                        default=today, help='datetime YYYYmmdd')
     parser.add_argument('--section', type=str,
-                        default='News', help='datetime YYYY-mm-dd')
+                        default='News-Stories', help='datetime YYYY-mm-dd')
     parser.add_argument('--directory', type=str,
-                        default='C:/Users/13a71/Documents/crawling output/dod', help='Output directory')
-    parser.add_argument('--max_num', type=int, default=2000,
+                        default='/home/joh87411/output', help='Output directory')
+    parser.add_argument('--max_num', type=int, default=20,
                         help='Maximum number of news to be scraped')
     parser.add_argument('--sleep', type=float, default=0.00001,
                         help='Sleep time for each news')
@@ -55,6 +50,7 @@ def main():
 
     args = parser.parse_args()
     begin_date = args.begin_date
+    print(begin_date)
     end_date = args.end_date
     section = args.section
     directory = args.directory

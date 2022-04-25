@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
 from textwrap import dedent
 
-from airflow import DAG
+from newsmodel.preprocess import NewspieacePreprocess
 
+from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.dummy import DummyOperator
 # branch를 사용하기 위해서 BranchPythonOperator을 불러와야 한다.
@@ -21,17 +22,18 @@ default_args = {
 }
 
 dag_args = dict(
-    dag_id="tutorial-python-op",
+    dag_id="test_data_pipeline",
     default_args=default_args,
     description="tutorial DAG python",
-    schedule_interval=timedelta(minutes=15),
+    schedule_interval=timedelta(days=1),
     start_date=datetime(2022, 4, 23),
-    tags=['example-sj']
+    tags=['Datapipeline']
 )
 
-dod_command = "python3 /home/joh87411/Tacademy-project/crawler/dod_scraper/scraping_latest_news.py"
-whitehouse_command = "python3 /home/joh87411/Tacademy-project/crawler/whitehouse_scraper/scraping_latest_news.py"
-dos_command = "python3 /home/joh87411/Tacademy-project/crawler/dos_scraper/scraping_latest_news.py"
+dod_command = "python3 /home/joh87411/Pipeline/crawler/DoD_scraper/scraping_latest_news.py"
+whitehouse_command = "python3 /home/joh87411/Pipeline/crawler/whitehouse_scraper/scraping_latest_news.py"
+dos_command = "python3 /home/joh87411/Pipeline/crawler/dos_scraper/scraping_latest_news.py"
+Preprocesor = NewspieacePreprocess(body_column_name="content")
 
 with DAG(**dag_args) as dag:
     start = BashOperator(
@@ -57,6 +59,20 @@ with DAG(**dag_args) as dag:
         bash_command=dos_command
     )
 
+    to_csv = BashOperator(
+        task_id='to_csv',
+        depends_on_past=False,
+        bash_command=get_jsondata(
+            '/home/joh87411/output', '/home/joh87411/output')
+    )
+
+    preprocessing = BashOperator(
+        task_id='preprocessing',
+        depends_on_past=False,
+        bash_command=Preprocesor.run_preprocessing(
+            '/home/joh87411/output/daily_csv')
+    )
+
     complete = BashOperator(
         task_id='complete_bash',
         depends_on_past=False,
@@ -64,4 +80,4 @@ with DAG(**dag_args) as dag:
         trigger_rule=TriggerRule.NONE_FAILED
     )
 
-    start >> [dod, whitehouse, dos] >> complete
+    start >> [dod, whitehouse, dos] >> to_csv >> preprocessing >> complete
