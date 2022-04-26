@@ -11,8 +11,9 @@ from DoD_scraper import get_latest_allnews, news_dateformat, strf_to_datetime
 def save(json_obj, directory):
     date = json_obj.get('date', '')
     title = json_obj.get('title', '')
-    filepath = '{}/DOD_{}_{}.json'.format(directory,
-                                          date, re.sub('[^a-zA-Z ]+', "", title[10:50]))
+    source = json_obj.get('source', '')
+    filepath = '{}/{}_{}_{}.json'.format(directory, source,
+                                         date, re.sub('[^a-zA-Z ]+', "", title[10:50]))
     with open(filepath, 'w', encoding='utf-8') as fp:
         json.dump(json_obj, fp, indent=2, ensure_ascii=False,
                   sort_keys=True, default=str)

@@ -1,18 +1,19 @@
 import argparse
+import datetime
 import json
 import os
 import re
+
 from dateutil.parser import parse
 from DoS_scraper import yield_latest_press
-import datetime
 
 
 def save(json_obj, directory):
-    url = json_obj['url']
     title = json_obj['title']
     dt = parse(json_obj['date'])
-    name = 'DOS_{}-{}-{}_{}'.format(dt.year, dt.month, dt.day,
-                                    re.sub("[-\/:*""?+\<%>|]", "", title[:50]))
+    source = json_obj['source']
+    name = '{}_{}-{}-{}_{}'.format(source, dt.year, dt.month, dt.day,
+                                   re.sub("[-\/:*""?+\<%>|]", "", title[:50]))
     filepath = '{}/{}.json'.format(directory, name)
     with open(filepath, 'w', encoding='utf-8') as fp:
         json.dump(json_obj, fp, indent=2, ensure_ascii=False,

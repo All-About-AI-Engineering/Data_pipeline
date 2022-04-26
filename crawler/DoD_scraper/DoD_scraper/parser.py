@@ -45,6 +45,7 @@ def parse_page(url):
         'content': content,
         'url': url,
         'source': "US Department of Defense",
-        'scrap_time': now()}
+        'scrap_time': now(),
+        'category':  "goverment statement"}
 
     return json_object

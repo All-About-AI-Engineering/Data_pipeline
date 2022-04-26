@@ -1,7 +1,9 @@
-from .utils import get_soup
-from .utils import now
 import re
+
 from dateutil.parser import parse
+
+from .utils import get_soup, now
+
 
 def parse_page(url):
     """
@@ -24,25 +26,26 @@ def parse_page(url):
 
     try:
         soup = get_soup(url)
-        title = soup.find('h1', class_ = 'page-title topper__title news').text 
-        title = re.sub('\n', '' , title, 100).replace(u"\u202f", " ")
-        title = re.sub('\t', '' , title, 100).replace(u"\xa0", " ")
-        date = soup.find('time', class_='posted-on entry-date published updated').text
+        title = soup.find('h1', class_='page-title topper__title news').text
+        title = re.sub('\n', '', title, 100).replace(u"\u202f", " ")
+        title = re.sub('\t', '', title, 100).replace(u"\xa0", " ")
+        date = soup.find(
+            'time', class_='posted-on entry-date published updated').text
         date = parse(date).strftime("%Y-%m-%d")
         phrases = soup.find('section', class_='body-content').find_all('p')
         content = '\n'.join([p.text.strip() for p in phrases])
-        content = re.sub('\n', '' , content, 100)
-        content = re.sub('\t', '' , content, 100)
-        content = re.sub('\xa0', '' , content, 1000).replace(u"\u202f", " ")
-        
+        content = re.sub('\n', '', content, 100)
+        content = re.sub('\t', '', content, 100)
+        content = re.sub('\xa0', '', content, 1000).replace(u"\u202f", " ")
 
-        
         json_object = {
-            'title' : title,
-            'date' : date,
-            'content' : content,
-            'url' : url,
-            'scrap_time' : now()
+            'title': title,
+            'date': date,
+            'content': content,
+            'url': url,
+            'scrap_time': now(),
+            'source': "US White house",
+            'category': "goverment statement"
         }
         return json_object
     except Exception as e:
